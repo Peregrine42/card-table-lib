@@ -1,0 +1,27 @@
+{
+  "name": "card-table-lib",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "rollup -c -w",
+    "serve": "http-server dist/",
+    "build": "rollup -c"
+  },
+  "author": "Duncan Fermor",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "leaflet": "^1.7.1",
+    "leaflet-fullscreen": "^1.0.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.13.10",
+    "@babel/preset-env": "^7.13.10",
+    "@rollup/plugin-babel": "^5.3.0",
+    "@rollup/plugin-commonjs": "^17.1.0",
+    "@rollup/plugin-node-resolve": "^11.2.0",
+    "http-server": "^0.12.3",
+    "rollup": "^2.42.0",
+    "rollup-plugin-copy": "^3.4.0"
+  }
+}
