@@ -1,45 +1,63 @@
-export function addCardMarker(L) {
-	L.CardMarker = L.CustomMarker.extend({
-		initialize: function (options) {
-			this.cardOptions = { ...options };
+import { pushIfNotPresent } from "./lib/pushIfNotPresent";
+import { removeIfPresent } from "./lib/removeIfPresent";
 
-			if (!this.cardOptions.id) {
+export function addCardMarker(L) {
+	L.CardMarker = L.TableMarker.extend({
+		initialize: function (options) {
+			this.tableOptions = { ...options, kind: "card" };
+
+			if (!this.tableOptions.id) {
 				console.warn("No ID set for card.");
 			}
 
-			const customOptions = {
-				...options,
-				latlng: this.getLatLng(),
-			};
-
-			L.CustomMarker.prototype.initialize.call(this, customOptions);
+			L.TableMarker.prototype.initialize.call(this, this.tableOptions);
 			this.draw();
 		},
 
-		getLatLng() {
-			const { x, y } = this.cardOptions;
-			return L.latLng(500 - y, 500 + x);
+		onAddToTableMap: function (map) {
+			L.TableMarker.prototype.onAddToTableMap.call(this, map);
+			pushIfNotPresent(map.cardMarkers, this);
+		},
+
+		onRemoveFromTableMap: function (map) {
+			L.TableMarker.prototype.onRemoveFromTableMap.call(this, map);
+			removeIfPresent(map.cardMarkers, this);
+		},
+
+		linkTo: function (stack) {
+			this.tableOptions.stackedBy = stack;
+			pushIfNotPresent(stack.tableOptions.stacked, this);
+		},
+
+		unlink: function () {
+			if (this.tableOptions.stackedBy) {
+				removeIfPresent(
+					this.tableOptions.stackedBy.tableOptions.stacked,
+					this
+				);
+				this.tableOptions.stackedBy = null;
+			}
 		},
 
 		draw: function () {
-			const c = this.cardOptions;
+			const o = this.tableOptions;
 
-			if (!c.color && !c.image) {
+			if (!o.color && !o.image) {
 				console.warn(
-					`Drawing blank card as no 'color' or 'image' set for id ${c.id}`
+					`Drawing blank card as no 'color' or 'image' set for id ${o.id}`
 				);
 			}
 
-			if (!c.width || !c.height) {
+			if (!o.width || !o.height) {
 				console.warn(
-					`Invalid width and/or height for card, id ${c.id}`
+					`Invalid width and/or height for card, id ${o.id}`
 				);
 			}
 
 			let backgroundImage = "";
-			if (c.image) {
+			if (o.image) {
 				backgroundImage = `
-				background-image: url(${c.image});
+				background-image: url(${o.image});
 				background-repeat: no-repeat;
 				background-position: center;
 				background-size: contain;
@@ -48,12 +66,12 @@ export function addCardMarker(L) {
 
 			const newHTML = `
 				<div 
-					data-id=${c.id}
+					data-id=${o.id}
 					style="
 						position: absolute;
-						width: ${c.width};
-						height: ${c.height};
-						background-color: ${c.image ? "transparent" : c.color};
+						width: ${o.width};
+						height: ${o.height};
+						background-color: ${o.image ? "transparent" : o.color};
 						${backgroundImage}
 					"
 				></div>

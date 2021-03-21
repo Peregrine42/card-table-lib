@@ -1,19 +1,21 @@
 import { customizeMap } from "leaflet-custom-markers";
 import { getElementById } from "./lib/getElementById";
+import { addTableMap } from "./TableMap";
+import { addTableMarker } from "./TableMarker";
 import { addCardMarker } from "./CardMarker";
+import { addStackMarker } from "./StackMarker";
 
 const onLoad = (L, getElementById) => {
 	const container = getElementById("container");
+
 	customizeMap(L);
+
+	addTableMap(L);
+	addTableMarker(L);
 	addCardMarker(L);
-	const map = new L.CustomMap(container, {
-		maxZoom: 3,
-		fullscreenControl: true,
-		center: [500, 500],
-		minZoom: -0.5,
-		zoom: -0.5,
-		crs: L.CRS.Simple,
-	});
+	addStackMarker(L);
+
+	const map = new L.TableMap(container);
 
 	new L.CardMarker({
 		id: "test-card-1",
@@ -26,6 +28,21 @@ const onLoad = (L, getElementById) => {
 		height: 55,
 		selected: false,
 	}).addTo(map);
+
+	const amount = 10;
+	const margin = 150;
+	for (let j = 0; j < amount; j += 1) {
+		for (let i = 0; i < amount; i += 1) {
+			new L.StackMarker({
+				id: `test-stack-${j * amount + i}`,
+				x: i * margin - Math.floor(amount / 2) * margin,
+				y: j * margin - Math.floor(amount / 2) * margin,
+				z: 5000 + j * amount + i,
+			}).addTo(map);
+		}
+	}
+
+	map.linkCardsToStacks();
 };
 
 export default {
